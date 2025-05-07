@@ -13,6 +13,8 @@ import {
 
 
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from './_layout';
 
 export default function Camera() {
   const [facing, setFacing] = useState<CameraType>('back');
@@ -20,7 +22,7 @@ export default function Camera() {
   const cameraRef = useRef<any>(null);
   const [responseText, setResponseText] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   if (!permission) return <View />;
   if (!permission.granted) {
@@ -76,7 +78,7 @@ export default function Camera() {
         }
       );
 
-      const geminiResponse = response.data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
+      const geminiResponse: any = response.data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
       setResponseText(geminiResponse);
 
       // Navigate to the Menu tab and pass the responseText

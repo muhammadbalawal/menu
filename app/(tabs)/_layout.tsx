@@ -8,6 +8,12 @@ import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
+export type RootStackParamList = {
+  index: undefined;
+  camera: undefined;
+  menu: { responseText: string } | undefined;
+};
+
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
