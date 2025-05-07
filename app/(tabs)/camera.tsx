@@ -1,5 +1,7 @@
 import axios from 'axios';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
+
 import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -38,6 +40,66 @@ export default function Camera() {
     setFacing((current) => (current === 'back' ? 'front' : 'back'));
   };
 
+
+  const pickImageAndSendToGemini = async () => {
+    setLoading(true);
+    setResponseText('');
+  
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        base64: true,
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 1,
+      });
+  
+      if (result.canceled || !result.assets || !result.assets[0].base64) {
+        setLoading(false);
+        return;
+      }
+  
+      const base64Data = result.assets[0].base64;
+  
+      const payload = {
+        contents: [
+          {
+            parts: [
+              {
+                inline_data: {
+                  mime_type: 'image/jpeg',
+                  data: base64Data,
+                },
+              },
+              {
+                text: 'Extract the Title, Description (if no description is provided, return null), and Price from the following restaurant menu. Return the extracted data in a well-structured JSON format.',
+              },
+            ],
+          },
+        ],
+      };
+  
+      const response = await axios.post(
+        'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=AIzaSyCVB-539SxRudfefLjCRGZieVvgaKAk5m4',
+        payload,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+  
+      const geminiResponse: any = response.data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
+      console.log(geminiResponse)
+      setResponseText(geminiResponse);
+  
+      navigation.navigate('menu', { responseText: geminiResponse });
+    } catch (err: any) {
+      console.error('Image Picker Gemini error:', err?.response?.data || err.message || err);
+      setResponseText('Error: ' + (err?.response?.data?.error?.message || 'Unknown error'));
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   const takePictureAndSendToGemini = async () => {
     if (!cameraRef.current) return;
     setLoading(true);
@@ -60,7 +122,7 @@ export default function Camera() {
                 },
               },
               {
-                text: 'Extract all the Title, Description and Price from this returant menu and return it in JSON format.',
+                text: 'Extract the Title, Description (if no description is provided, return null), and Price from the following restaurant menu. Return the extracted data in a well-structured JSON format.',
               },
             ],
           },
@@ -101,6 +163,10 @@ export default function Camera() {
           <TouchableOpacity style={styles.button} onPress={takePictureAndSendToGemini}>
             <Text style={styles.text}>Snap + Analyze</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={pickImageAndSendToGemini}>
+            <Text style={styles.text}>Pick from Gallery</Text>
+          </TouchableOpacity>
+
         </View>
       </CameraView>
 
@@ -136,7 +202,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-evenly',
     alignItems: 'flex-end',
-    marginBottom: 40,
+    marginBottom: 60,
   },
   button: {
     backgroundColor: '#00000088',
