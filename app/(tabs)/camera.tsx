@@ -70,7 +70,18 @@ export default function Camera() {
                 },
               },
               {
-                text: 'Extract the Title, Description (if no description is provided, return null), and Price from the following restaurant menu. Return the extracted data in a well-structured JSON format.',
+                text: `Extract structured data from the following restaurant menu.
+
+                      For each menu item, return a JSON object with the following format:
+                      {
+                        "title": string,
+                        "description": string | null,
+                        "price": string
+                      }
+
+                      If a description is not provided, set its value to null.
+
+                      Return a list of these JSON objects.`,
               },
             ],
           },
