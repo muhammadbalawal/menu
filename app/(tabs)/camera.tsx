@@ -11,12 +11,16 @@ import {
   View,
 } from 'react-native';
 
+
+import { useNavigation } from '@react-navigation/native';
+
 export default function Camera() {
   const [facing, setFacing] = useState<CameraType>('back');
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<any>(null);
   const [responseText, setResponseText] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigation = useNavigation();
 
   if (!permission) return <View />;
   if (!permission.granted) {
@@ -72,7 +76,11 @@ export default function Camera() {
         }
       );
 
-      setResponseText(response.data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response');
+      const geminiResponse = response.data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response';
+      setResponseText(geminiResponse);
+
+      // Navigate to the Menu tab and pass the responseText
+      navigation.navigate('menu', { responseText: geminiResponse });
     } catch (err: any) {
       console.error('Gemini API error:', err?.response?.data || err.message || err);
       setResponseText('Error: ' + (err?.response?.data?.error?.message || 'Unknown error'));
